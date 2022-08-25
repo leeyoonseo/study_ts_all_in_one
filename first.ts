@@ -142,3 +142,65 @@ class I extends H {
     console.log('추상 메서드는 반드시 상속받았을때 구현해야한다.');
   }
 }
+
+// b는 옵셔널, interface나 type에서도 사용 가능
+function abc(a: number, b?: number) { }
+
+abc(1);
+abc(1, 2);
+
+function abcd(...args: number[]) { }
+
+abcd(1);
+abcd(1, 2);
+abcd(1, 2, 3);
+
+// 제네릭: 사용할때 타입이 정해짐, extends를 통해 제한할 수 있다.
+function add<T extends number | string>(x: T, y: T): T {
+  return x + y;
+}
+// 같은 타입의 인수를 넘길 수 있도록 한다.
+add(1, 2); // 3
+add('1', '2'); // 12
+
+// 제네릭을 여러개 만들수도있고, 각 각 제한할 수도 있다.
+function add2<T extends number, K extends string>(x: T, y: K): T {
+  return x + y;
+}
+
+add2(1, '2');
+
+// 제네릭의 제한방법
+function add3<T extends string>(x: T): T { return x };
+
+//<T extends {...}>
+function add4<T extends { a: string }>(x: T): T { return x };
+add4({ a: 'hello' });
+
+//<T extends any[]>
+function add5<T extends string[]>(x: T): T { return x };
+add5(['1', '2', '3']);
+
+// 함수 모양으로 제한하기, 콜백함수들을 보통 많이 제한함
+//<T extends (...args: any) => any>
+function add6<T extends (a: string) => number>(x: T): T { return x };
+add6((a) => +a);
+
+// 모든 콜백 함수를 사용하려고 할때
+//<T extends (...args: any) => any>
+// 제한이없기 때문에 any 써도 상관은 없다고함 (잘 없다고함)
+function add7<T extends (...args: any) => any>(x: T): T { return x };
+add7((a) => +a);
+
+// 생성자
+//<T extends abstract new (...args: any) => any>
+function add8<T extends abstract new (...args: any) => any>(x: T): T { return x };
+// 생성자만 가능
+class A8 {} // 클래스 A는 A자체가 타입
+class A9 {
+  constructor() {
+    // 컨스트럭트 타입도 아래와 같이 처리
+    // function add8<T extends abstract new (...args: any) => any>(x: T): T { return x };
+  }
+} // 클래스 A는 A자체가 타입
+add8(A8);
