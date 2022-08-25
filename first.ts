@@ -215,3 +215,29 @@ add9(1);
 add9('2');
 add10(1);
 add10('1');
+
+// 제네릭 분석
+interface Array<T> {
+  forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
+}
+
+// 제네릭 선언 방법
+// type A<T> =
+// class A < T > {}
+
+// 제네릭의 타입 추론 - 제네릭으로 인하여 가능
+[1, 2, 3].forEach(value => value); // number
+['1', '2', '3'].forEach(value => value); // string
+[true, false, true].forEach(value => value); // boolean
+['123', 123, true].forEach(value => value); // string | number | boolean
+
+// map 분석
+interface Array<T> {
+  forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
+  map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
+}
+
+// T = number
+// callbackfn의 return 값의 type이 string이며 === U, 따라서 전체의 리턴 값은 string[]이다.
+const strings = [1, 2, 3].map(item => item.toString()); // string[]
+const numbers = [1, 2, 3].map(item => item + 1); // number[]
