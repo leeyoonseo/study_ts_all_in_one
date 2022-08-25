@@ -204,3 +204,14 @@ class A9 {
   }
 } // 클래스 A는 A자체가 타입
 add8(A8);
+
+// 제네릭도 기본 값을 넣어야하는 경우가 있다 = jsx 문법일 경우 헷갈려함
+// 기본 값 (추론을 못할때 쓰기 때문), 인수가 넘어오면 추론을 다시해서 타입을 덮어쓰기때문에 상관없다.
+function add9<T extends unknown>(x: T): T { return x };
+function add10<T = unknown>(x: T): T { return x };
+function add11<T,>(x: T): T { return x }; // 콤마(,) 찍어도 되긴하는데, 의도가 보이지 않아서 오타와 구분하기 어려움. (권장x = 개취)
+
+add9(1);
+add9('2');
+add10(1);
+add10('1');
