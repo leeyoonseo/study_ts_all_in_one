@@ -233,7 +233,6 @@ interface Array<T> {
 
 // map 분석
 interface Array<T> {
-  forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
   map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[];
 }
 
@@ -241,3 +240,24 @@ interface Array<T> {
 // callbackfn의 return 값의 type이 string이며 === U, 따라서 전체의 리턴 값은 string[]이다.
 const strings = [1, 2, 3].map(item => item.toString()); // string[]
 const numbers = [1, 2, 3].map(item => item + 1); // number[]
+
+// filetr 제네릭
+// 제네릭이 여러번 선언되어있는 경우? 같은 함수가 여러가지 방법으로 사용되는 경우 타입이 여러번 선언되어 있을수 있다.
+interface Array<T> {
+  filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];
+  filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[];
+}
+
+// filter<number extends number>(predicate: (value: number, index: number, array: number[]) => value is number, thisArg?: any): number[];
+const filtered = [1, 2, 3, 4, 5].filter(value => value % 2); // number[]
+
+// 제대로 타입을 못 찾는 경우
+// 의도한 것은 string[]인데, 추론을 잘 못하고 있다.
+// filter<(string | number) extends (string | number)>(predicate: (value: (string | number), index: number, array: (string | number)[]) => value is (string | number), thisArg?: any): (string | number)[];
+// 2번째것이 안되는이유: filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[]; === T가 (string | number)이기때문에 return 값을 제대로 추론하기 위해서는 이것을 사용할 수 없다.
+const predicate = (value: string | number): value is string => typeof value === 'string'; // 커스텀 타입 가드를 통해서 string으로 변경함 (value is string) 
+const filtered2 = ['1', 2, '3', 4, 5].filter(predicate); // (string | number)[]
+
+// 타입 선언에서 predicate에 커스텀 타입 가드를 했으면 test에서도 커스텀 타입가드를 해야함
+// const test = ['1', 2].filter<string extends string | number>(value => typeof value === 'string');
+const test = ['1', 2].filter<string>(predicate); // 이건 에러가 안나는 것이 T는 string | number지만 S는 string으로 넣어줬고, predicate 함수도 커스텀 타입가드를 만족하기 때문!
