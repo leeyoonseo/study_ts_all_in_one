@@ -53,3 +53,34 @@ let numberA = 6; // 6이 타입으로 들어갈 수 있으나 number로 타입�
 // let numberA 가 string | number일때 아래와 같이 타입가드로 타입을 좁힐때, if문 내에서는 타입을 string으로 타입 추론이 좁혀진다.
 // if (typeof numberA === 'string')
 
+// 오버로딩 (interface, class 안에서도 오버로딩 가능)
+// 같은 함수인데 여러번 타입 선언된 경우. -> ex: filter...
+// 타입을 한가지 방식으로 못하겠는 경우 2가지로 타입 선언을 한다.
+// declare // 함수 구현부 안만들고 타입 정의를 하고, 실제 코드는 다른 곳에 있다고 선언하는 것
+// declare function add(x: number, y: number, z?: number): number; // 원래라면 이렇게 하겠지만, 모르는 경우 아래와 같이 오버로딩할 수 있다.
+declare function add(x: number, y: number): number;
+declare function add(x: number, y: number, z: number): number;
+declare function add(x: string, y: string): string;
+
+// 두가지를 다 구현하고 싶은데 방법을 모를때... 여러번 선언도 가능
+add(1, 2);
+add(2, 3, 4); // 마우스 올리면 overload된 횟수도 알려줌..
+add('1', '2');
+
+interface IAdd {
+  (x: number, y: number): number;
+  (x: string, y: string): string;
+}
+
+const iAdd: IAdd = (x: any, y: any) => x + y; 
+
+class CAdd {
+  add(x: number, y: number): number;
+  add(x: string, y: string): string;
+  add(x: any, y: any) { // 오버로딩했을때 any 넣어도 상관없? -> 타입을 정확히 넣으면 any가 사용되지 않고 있음.
+    return x + y;
+  };
+}
+
+const cadd = new CAdd().add(1, 2);
+const cadd2 = new CAdd().add('1', '2');
