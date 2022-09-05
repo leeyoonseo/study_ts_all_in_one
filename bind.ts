@@ -67,7 +67,7 @@ BExampleB4(4, 5, 6); // 3개를 바인딩 하면 매개변수도 3개만 나옴
 const BExampleB5 = BExampleB.bind(null, 1, 2, 3, 4);
 BExampleB5(5, 6);
 
-// 5개 부터는 에러가 나는데 왜일까?
+// 5개 부터는 에러가 나는데 왜일까? -> typescript가 더 이상의 케이스에 대해 만들지 않았기 때문에. (-> 파라미터가 엄청 많은 함수가 거의 없기에...)
 const BExampleB6 = BExampleB.bind(null, 1, 2, 3, 4, 5); 
 // BExampleB6(6);
 BExampleB6(); // (...args: (1 | 2 | 3 | 4 | 5)[]) => number
