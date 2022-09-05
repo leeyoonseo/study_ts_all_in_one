@@ -82,3 +82,68 @@ const choOmit: UOmit<UProfile, 'married'> = {
 
 // Extract 추출하는것 
 type Human = Extract<UAnimal, 'Human'>;
+
+// Required - optional을  required로 바꾸고 싶을때
+interface UProfileOptional {
+  name?: string,
+  age?: number,
+  married?: boolean,
+}
+
+// optional을 required로 바꾼다.
+type URequired<T> = {
+  // -? 란: 물음표는 optional인데, -?를 하면 ?를 빼는 것임.
+  // +?는  ?랑 똑같기 때문에 안씀.
+  // 마이너스는 옵셔널을 빼는 것
+  [key in keyof T]-?: T[key];
+};
+
+// const choRequired: Required<UProfileOptional> = {
+//   name: 'cho',
+//   age: 30,
+//   married: false,
+// };
+
+const choRequired: URequired<UProfileOptional> = {
+  name: 'cho',
+  age: 30,
+  married: false,
+};
+
+// 수정 못하게 readonly 하는 법
+type UReadonly<T> = {
+  readonly [key in keyof T]: T[key];
+  
+  // 반대로 readonly 빼기
+  // -readonly [key in keyof T]: T[key];
+};
+
+const choReadonly: UReadonly<UProfileOptional> = {
+  name: 'cho',
+  age: 30,
+  married: false,
+};
+// choReadonly.name = 'cho2';
+
+
+// Record - 객체를 표현하는 한가지 방법
+// interface URecord {
+//   [key: string]: number;
+// }
+// 위의 방법을 간단하게 만들어 둔 것 
+const recordA: Record<string, number> = { a: 3, b: 5, c: 7 };
+
+// 객체의 키는 number, string, symbol만 올 수 있기때문에 extends keyof any를 해줘야함.
+type URecord<T extends keyof any, S> = {
+  [key in T]: S;
+}
+
+// NonNullable ?
+type UNonA = string | null | undefined | boolean | number;
+// 여기서 null과 undefined를 제외하고 가져오고 싶을때 사용
+type UNonB = NonNullable<UNonA>;
+// 타입들이 key에 적용되는게 있고 interface, 객체에 적용되는 것이 있어서 구분을 해야한다.
+// key는 pick과 같은애들, 객체는 nonnullable과 같은 애들..
+// NonNullable 만들기
+type UNon<T> = T extends null | undefined ? never : T; 
+type UNonC = UNon<UNonA>;
