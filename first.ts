@@ -43,7 +43,7 @@
 // type AA = {[key in B]: number}; // key가 B의 3개 문자열 중에 하나
 // const aaaaa: AA = { Human: 123, Mammal: 5, Animal: 7};
 
-// // 클래스일 경우 
+// // 클래스일 경우
 // class C  {
 //   a: string;
 //   b: number;
@@ -60,7 +60,7 @@
 // // class 이름은 그 자체로 타입이 될 수 있다.
 // // new C를 타입으로 가르키는 타입
 // type CC = C;
-// const cc: C = new C('123'); 
+// const cc: C = new C('123');
 // // class 자체를 가르키는 타입
 // const e: typeof C = C; // C는 클래스 자체를 가르키는 타입은 [typeof C], 클래스 이름은 인스턴스를 가르킨다. [C]
 
@@ -71,11 +71,11 @@
 //   // 하지만 실제 개발 시 typqscript에서 private를 public으로 사용할 수 없기에 (에러) 개발 시 문제가 안된다고본다.
 //   private a: string = '123';
 //   // javascript
-//   #b: number = 123; 
+//   #b: number = 123;
 
 //   method() {
 //     // private일 경우 자기 class 내부에서만 쓸 수 있다.
-//     console.log(this.a, this.#b); 
+//     console.log(this.a, this.#b);
 //   }
 // }
 
@@ -90,9 +90,9 @@
 // // implements - class는 interface를 구현(implements)할 수 있다.
 // // interface가 있으면 class는 interface를 따라야한다. (즉 F가 E를 따라야한다.)
 // // interface와 implements는 js가 되면 사라진다. -> 경고를 통해 class의 모양을 interface로 통제할 수 있다.
-// class F implements E { 
+// class F implements E {
 //   // 내부에서 키워드 사용가능하므로 굳이 implements 사용안한다고 함(=이건 개취)
-//   // 객체지향을 중시할 경우 사용 
+//   // 객체지향을 중시할 경우 사용
 //   // - 추상에 의존하고 구현에 의존하지 말라를 원칙적으로 지키기 위해서 사용해도됨
 //   // - 추상(interface)과 구현(class)
 
@@ -110,7 +110,7 @@
 //   // private readonly a: string = '123';
 // }
 
-// class G extends F { 
+// class G extends F {
 //   // F를 상속받고 있기 때문에 F의 protected 프로퍼티 사용 가능
 //   method() {
 //     // console.log(this.a); // private여서 사용 불가
@@ -255,9 +255,32 @@
 // // 의도한 것은 string[]인데, 추론을 잘 못하고 있다.
 // // filter<(string | number) extends (string | number)>(predicate: (value: (string | number), index: number, array: (string | number)[]) => value is (string | number), thisArg?: any): (string | number)[];
 // // 2번째것이 안되는이유: filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[]; === T가 (string | number)이기때문에 return 값을 제대로 추론하기 위해서는 이것을 사용할 수 없다.
-// const predicate = (value: string | number): value is string => typeof value === 'string'; // 커스텀 타입 가드를 통해서 string으로 변경함 (value is string) 
+// const predicate = (value: string | number): value is string => typeof value === 'string'; // 커스텀 타입 가드를 통해서 string으로 변경함 (value is string)
 // const filtered2 = ['1', 2, '3', 4, 5].filter(predicate); // (string | number)[]
 
 // // 타입 선언에서 predicate에 커스텀 타입 가드를 했으면 test에서도 커스텀 타입가드를 해야함
 // // const test = ['1', 2].filter<string extends string | number>(value => typeof value === 'string');
 // const test = ['1', 2].filter<string>(predicate); // 이건 에러가 안나는 것이 T는 string | number지만 S는 string으로 넣어줬고, predicate 함수도 커스텀 타입가드를 만족하기 때문!
+
+// 빈 객체 타입 {}와 Object, 4.8 업데이트 (베타)
+// 빈객체와 Object는 객체아니야 하는데 문자열이 대입이 된다.
+// {}, Object? === 모든 타입(null과 undefined 제외)... 모양이 객체라서 객체라고 착각하면 안된다.
+const o1: {} = 'hello'; 
+const o2: Object = 'hi'; 
+
+// object가 실제 객체를 뜻한다.
+// const o3: object = 'h1';
+const o4: object = { hello: 'world' }; // object라고 바로 넣는 것을 지양, interface, type, class 쓰길 바란다.
+const o5: unknown = 'h1'
+
+// unknown도 모든 타입을 다 받을 수 있다. any보다 좀 더 낮은 타입으로 타입을 나중에 직접 정해줘야한다.
+// unknown을 쓰는 것을 더 권장
+// unknown = {} | null | undefined (4.8버전에서 이 공식이 성립)
+// 4.7버전에서는 unknown인 변수를 if문안에 넣으면 unknown이 나온다.
+// if문안에 들어가면 타입가드로 null 과 undefined가 떨어져나가는데, 그렇기 때문에 unknown = {}가 된다.
+if (o5) {
+  o5; // 4.8 버전에서는 unknown인 것을 넣으면 타입이 {}이렇게 나오는데, (나는 왜 4.7 버전인데?)
+  // 여튼 {} 타입은 모든 타입을 가리키는 것이다. 
+} else {
+  o5; // 타입 가드로 인해 unknown = null | undefined
+}
