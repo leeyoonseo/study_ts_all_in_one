@@ -147,3 +147,49 @@ type UNonB = NonNullable<UNonA>;
 // NonNullable 만들기
 type UNon<T> = T extends null | undefined ? never : T; 
 type UNonC = UNon<UNonA>;
+
+// infer
+function zip(x: number, y: string, z: boolean): { x: number, y: string, z: boolean } {
+  return { x, y, z };
+}
+
+// zip 함수의 매개변수의 타입을 가져오고 싶을때?
+// zip을 바로 넣으면 에러가 난다 => 변수는 바로 넣을 수 없기에 typeof를 넣어줘야한다.
+type UZipParams = Parameters<typeof zip>; // 튜플로 나옴
+// type first = UZipParams[0]; // 이런식으로 뽑아서 타입을 사용할 수 있음, 타입 간에도 배열처럼 나오면 index로 접근할 수 있다.
+
+// Parameters 만들기
+// 함수로 제한 두기 <T extends (...args: any) => any>
+// 1. <T extends (...args: any) => any> = T는 무조건 함수여야한다.
+// 2. T extends (...args: infer A) => any ? A : never; -> 매개 변수 A의 순서대로 추론한다. 추론해서 값들을 돌려둔다.
+type UParameters<T extends (...args: any) => any> = T extends (...args: infer A) => any ? A : never;
+// infer는 extends 에서만 사용 가능하다.
+// infer - 추론하는 것, 추론 조건 ? 추론 성공 시 값 : 추론 실패 시 값
+// 함수의 return 타입을 가져오고 싶다.
+type UReturn<T extends (...args: any) => any> = T extends (...args: any) => infer A ? A : never; 
+type Ret = UReturn<typeof zip>; // return 타입
+
+// ConstructorParameters, InstanceType
+// 생성자 대상의 type 분석
+// 모양이 유사하다 - abstract new (...args: any) => any 이건 생성자 모양
+// type UConstructorParameters<T extends abstract new (...args: any) => any> = T extends abstract new (...args: infer P) => any ? P : never;
+// type UInstanceType<T extends abstract new (...args: any) => any> = T extends abstract new (...args: any) => infer P ? P : any;
+class UClassA {
+  a: string;
+  b: number;
+  c: boolean;
+
+  constructor(a: string, b: number, c: boolean) {
+    this.a = a;
+    this.b = b;
+    this.c = c;
+  }
+}
+
+const classA = new UClassA('123', 456, true);
+type classAConstructorP = ConstructorParameters<typeof UClassA>;  // typeof 클래스가 생성자
+type classAInstanceType = InstanceType<typeof UClassA>; 
+
+// 클래스는 타입으로 바로 쓸 수 있다.
+/// UClassA라는 타입, 정확하게는 uClassA를 타입으로 사용하는데, 저건 class가 아니라 instance이다.
+const typeClassA: UClassA = new UClassA('123', 456, true); // 인스턴스 (new)
