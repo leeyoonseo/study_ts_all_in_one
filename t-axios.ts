@@ -1,4 +1,4 @@
-import axios from "./node_modules/axios/index";
+import axios from "axios";
 
 // 브라우저 fetch
 // 노드 fetch
@@ -7,7 +7,11 @@ import axios from "./node_modules/axios/index";
 (async () => {
   try {
     // get, put, post 같은건 class Axios에 선언되어 있음.
-    await axios.get('https://jsonplaceholder.typicode.com/posts/1');
+    // get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+    // 결과 값 Promise<AxiosResponse<T>>;, T는 AxiosResponse의 data: T임
+    const response = await axios.get('https://jsonplaceholder.typicode.com/posts/1');
+    // response.data // data === any
+    console.log(response.data);
   } catch (Error) {
 
   }
@@ -31,7 +35,7 @@ axiosA.c = 'c';
 const axiosB = () => { }; // 함수
 axiosB.create = () => { }; // 함수안에 또다른 속성으로 함수를 넣어주고 있다.
 axiosB.isAxiosError = () => { };
-axiosB.name = 'axiosB';
+// axiosB.name = 'axiosB';
 // export interface AxiosStatic extends AxiosInstance {
 //   create(config?: AxiosRequestConfig): AxiosInstance;
 //   Cancel: CancelStatic;
