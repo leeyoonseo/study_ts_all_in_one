@@ -33,4 +33,16 @@ $(tag).html(function (i: number) {
 
 // Q. 모든 라이브러리가 commonjs? -> No
 // export default -> esmodule
-// export = $ -> commonjs 
+// export = $ -> commonjs
+
+// Q. namespace
+// declare namespace JQuery { ... }
+// - namespace는 script src로 불러오는 라이브러리에서 주로 쓴다. (전역) 즉, JQuery로 묶어준 것.
+// - declare에 여러개의 변수를 만들었는데, 이름 충돌이 나니까 하나의 이름으로 묶어줬다 ?
+declare namespace JNamespace1 {
+  const aa: string;
+  const bb: string;
+  const cc: string;
+};
+
+JNamespace1.aa;
