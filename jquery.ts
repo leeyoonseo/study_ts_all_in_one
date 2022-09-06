@@ -111,3 +111,36 @@ declare namespace JNamespace1 {
 };
 
 JNamespace1.aa;
+
+// 타입 만들어보기
+interface nQuery<T> {
+  // interface안에서 this를 사용하기 때문에... (X)
+  // this: this로 해도 타입이 잡히기는하는데... (X)
+  // this: nQuery 도 타입이 잡히기는 하는데... (X)
+  // Q. 원본은 제네릭으로(TElement) 되어있는데? 이유는? - this는 jQuery가 아니라 htmlTag이기 때문에!
+  // $('p')는 jquery인데 document.querySelector('h1')은 jquery가 아니라 태그다.
+  // 즉 this는 jquery가 아니라 tag여야하고, this일 경우 jquery가 되기 때문에 문제가된다.
+  // 따라서 실제로 jquery를 넣어도 this는 태그여야 하기에 제네릭을 통해 원래 태그를 (TElement) 넣어줬다.
+  // html(htmlString_function: JQuery.htmlString |
+  //   JQuery.Node |
+  //   ((this: TElement, index: number, oldhtml: JQuery.htmlString) => JQuery.htmlString | JQuery.Node)): this;
+  text(param?: string | number | boolean | ((this: T, index: number) => string | number | boolean)): this;
+  // Document | DocumentFragment 구분을 어떻게 하는가? vscode에서 안내하는 것을 확인하기..
+  html(param: string | Document | DocumentFragment): void;
+}
+
+// $tag의 타입을 강제로 nQuery로 바꿔놓았기 때문에 as unknown as nQuery로 바꿈 (테스트를 위해)
+const $tag: nQuery<HTMLElement> = $(['p', 't']) as unknown as nQuery<HTMLElement>;
+
+$tag.text('123');
+$tag.text(123);
+$tag.text(function (index) {
+  console.log(this, index);
+  return true;
+});
+
+$tag.text().html(document);
+
+// Q. tag가 jQuery인데 또 jQuery로 감싸면 어떻게 되는가?
+// HTMLElement | ArrayLike<HTMLElement> (ArrayLink = 유사배열)
+$(tag).html(document);
