@@ -1,4 +1,4 @@
-import axios, { Axios, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 
 // api test: https://jsonplaceholder.typicode.com/
 
@@ -60,8 +60,30 @@ interface Data { title: string, body: string, userId: number }
       }
     });
 
-  } catch (Error) {
+  } catch (error) {
+    // export class AxiosError<T = unknown, D = any> extends Error {
+    
+    // 1. as 사용해서 바로 사용
+    // response가 optional
+    // (error as AxiosError).response?.data
 
+    // 2. 변수에 담기
+    // const errorResponse = (error as AxiosError).response;
+    
+    // 3. 타입가드 (Best!!)
+    // -> AxiosError가 class이기 때문에 타입 가드에서 사용할 수 있다. interface인 경우 js가 되면서 사라지므로!
+    // axios에서는 isAxiosError 메서드를 제공한다. -> filter나 if문에서 사용해서 타입가드로 사용할 수 있을듯
+    // if (error instanceof AxiosError) { 
+    if (axios.isAxiosError(error)) {
+      console.error(error.response?.data);
+
+      // { message: '서버장애 입니다. 다시 시도해주세요.' }
+      // isAxiosError를 사용하면 data가 unknown이 뜨는 경우가 있다. 이때 아래와 같이 제네릭이 없기 때문에 타입을 전달하기가 어렵다.
+      // isAxiosError(payload: any): payload is AxiosError; 
+      // 이럴 경우 as AxiosResponse로 처리해줘야한다.
+      // console.error((error as AxiosError<{ message: string }>).response?.data.message); // as의 위치, 선언하는 interface만 다를뿐 아래와 동일함
+      console.error((error.response as AxiosResponse<{ message: string }>)?.data.message);
+    }
   }
 })();
 
