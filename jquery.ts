@@ -126,7 +126,7 @@ interface nQuery<T> {
   //   ((this: TElement, index: number, oldhtml: JQuery.htmlString) => JQuery.htmlString | JQuery.Node)): this;
   text(param?: string | number | boolean | ((this: T, index: number) => string | number | boolean)): this;
   // Document | DocumentFragment 구분을 어떻게 하는가? vscode에서 안내하는 것을 확인하기..
-  html(param: string | Document | DocumentFragment): void;
+  html(param: string | Document | DocumentFragment): this;
 }
 
 // $tag의 타입을 강제로 nQuery로 바꿔놓았기 때문에 as unknown as nQuery로 바꿈 (테스트를 위해)
@@ -144,3 +144,4 @@ $tag.text().html(document);
 // Q. tag가 jQuery인데 또 jQuery로 감싸면 어떻게 되는가?
 // HTMLElement | ArrayLike<HTMLElement> (ArrayLink = 유사배열)
 $(tag).html(document);
+
