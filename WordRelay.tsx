@@ -61,6 +61,8 @@ const WordRelay: FC = () => {
 
     // 2. cleanup 함수 이용 (Destructor)
     // type EffectCallback = () => (void | Destructor);
+    // type Destructor = () => void | { [UNDEFINED_VOID_ONLY]: never };
+    // declare const UNDEFINED_VOID_ONLY: unique symbol; => unique symbol은 Symbol()을 타이핑하는 방법
     return () => {
       console.log('useEffect cleanup');
       // cleanup 함수에 return 값은 없어야한다.
@@ -111,3 +113,42 @@ const WordRelay: FC = () => {
 };
 
 export default WordRelay;
+
+// Q. 타입스크립트 브랜딩 방법?
+// type Destructor = () => void | { [UNDEFINED_VOID_ONLY]: never };
+// - | { [UNDEFINED_VOID_ONLY]: never }은 뭘까? 찾아보는 방법: 깃헙 히스토리 파악하기
+// type Brand<K, T> = K & { __brand: T } -> { __brand: T }는 실제 존재하는 속성이 아님, 이게 있어서 이 자리에 다른 것을 못 넣는다?
+// type USD = Brand<number, 'USD'>
+
+// 아래와 같은 예시가 있다고하자.
+const usd2 = 10;
+const eur2 = 10;
+const krw2 = 2000;
+
+// 보통은 number로 할수도있다.
+function euroToUsd2(euro: number): number {
+  return (euro * 1.18);
+}
+console.log(`USD: ${euroToUsd2(eur2)}`);
+euroToUsd2(1); // 1.18
+euroToUsd2(krw2); // eur to use인데 krw를 넣었을 때 막을 방법이 없다. 매개변수 euro는 number이고 return 값도 number이기 때문에, 타입에러가 아님
+
+// 이때 브랜딩 기법을 사용하게 된다.
+type Brand<K, T> = K & { __brand: T }; // 가상 속성을 사용해 새로운 타입을 만들어 넣는다.
+type EUR = Brand<number, 'EUR'>;
+type USD = Brand<number, 'USD'>;
+type KRW = Brand<number, 'KRW'>;
+// 그리고 실제로 존재하지 않는 타입이기에 as로 타입을 강제한다.
+const usd = 10 as USD;
+const eur = 10 as EUR;
+const krw = 2000 as KRW;
+
+function euroToUsd(euro: EUR): number {
+  return (euro * 1.18);
+}
+console.log(`USD: ${euroToUsd(eur)}`);
+
+euroToUsd(eur);
+// euroToUsd(usd); // __brand: T로 인해서 타입이 안맞기 때문에 불가능
+
+
