@@ -3,7 +3,7 @@
 // commonjs는 import React = require('react');로 import 해야하는데,
 // import React from 'react; 가 되는 건 esModuleInterop:true 이기 때문에 가능
 // export as namespace React; // 이것도 있으면 UMD
-import React, { useState, useCallback, useRef, useEffect, FunctionComponent, FC } from 'react';
+import React, { useState, useCallback, useRef, useEffect, FunctionComponent, FC, FormEvent, MouseEvent, ChangeEvent } from 'react';
 
 // 간단한 함수 구조
 // (prop) => JSX
@@ -42,12 +42,17 @@ const WordRelay: FC = () => {
   const [word, setWord] = useState('강아지');
   const [value, setValue] = useState('');
   const [result, setResult] = useState('');
-  const inputEl = useRef(null);
+  const inputEl = useRef<HTMLInputElement>(null);
 
-  // useEffect의 EffectCallback 타입의 return type이 void로 고정되어있어서 useEffect를 async로 사용할 수 없다. 
+  // function useEffect(effect: EffectCallback, deps?: DependencyList): void;
+  // Q. useEffect의 EffectCallback 타입의 return type이 void로 고정되어있어서 useEffect를 async로 사용할 수 없다.
   // type EffectCallback = () => (void | Destructor);
   // - async는 return 값이 Promise여야함.
   // useEffect(async () => { // (X)
+  // Q. deps는 -> []인데, 이것은 무엇이냐? 
+  // type DependencyList = ReadonlyArray<unknown>;
+  // interface ReadonlyArray<T> { -> length가 고정이고 나머지는 array와 같은 것 (즉, 읽기 전용 array)
+  // const deps: readonly any[] = [];
   useEffect(() => {
     // useEffect에서 async를 못쓰므로 아래와 같이 패턴이 강제됨
     // 1.
@@ -67,11 +72,43 @@ const WordRelay: FC = () => {
       console.log('useEffect cleanup');
       // cleanup 함수에 return 값은 없어야한다.
     }
+  // readonly any[]를 사용해봄
+  // }, deps);
+  // 그냥 useEffect의 두번째 인자로 넣으면 ReadonlyArray이기에 추론이 됨
   }, []);
 
-  const onsubmitForm = useCallback((e) => {
+  // Q. useCallback도 18버전에서 바뀜 (callback: T)이 알아서 타입을 제공하지 않음
+  // 17버전
+  // function useCallback<T extends (...args: any[]) => any>(callback:T, deps: DependancyList): T;
+  // - (...args: any[]) 타이핑이 되어있는 상태
+  // 18버전
+  // function useCallback<T extends Function>(callback: T, deps: DependencyList): T;
+  // - Function은? 매개변수와 리턴값이 타이핑 안되어있는 상태
+  // - 따라서 매개변수 타이핑을 해줘야함
+  // Q. FormEvent?
+  // interface FormEvent<T = Element> extends SyntheticEvent<T> {
+  // 제네릭에 대상을 넣어줘야함
+  const onsubmitForm = useCallback((e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Q. useRef 타이핑
+    // - useRef는 타입이 3가지 선언되어있다.
+    // 1. function useRef<T>(initialValue: T): MutableRefObject<T>; 
+    // - MutableRefObject? jsx와 ref를 연결하는 역할이 아닌 값만 저장할때 사용하는 용도, state와 차이는 화면을 리렌더링 시킨다(state) 안시킨다(ref)로 구분
+    //
+    // 2. function useRef<T>(initialValue: T | null): RefObject<T>;
+    // - RefObject? 실제 jsx에 ref로 연결한 것
+    // - 2번의 예제로 useRef<HTMLHeadElement>(document.querySelector('head')); 도 가능한데, 이유는 HTMLHeadElement가 T | null 임
+    // - 예제에서 !를 통해 명확하게 만들어버리면(non null assertion) null 조건에 부합하지 않으므로 useRef<HTMLHeadElement>(document.querySelector('head')!); MutableRefObject가 됨 
+    //
+    // 3. function useRef<T = undefined>(): MutableRefObject<T | undefined>;
+    // - 위에서 이렇게 선언하면 1번 사용됨, 2번 사용되어야함
+    // const inputEl = useRef(null);
+    // - 이렇게 하면 2번 사용됨. 제네릭으로 타입 지정, focus 에러 안남
+    // const inputEl = useRef<HTMLInputElement>(null); 
+    // 만약 const inputEl = useRef<HTMLInputElement>(); 이렇게 값을 안쓰면 MutableRefObject가 됨, 초기값도 넣어야한다. (3번이 됨)
+    // 3번이 초기값이 비어있는것이 만족되므로..
     const input = inputEl.current;
+
     if (word[word.length - 1] === value[0]) {
       setResult('딩동댕');
       setWord(value);
@@ -90,7 +127,11 @@ const WordRelay: FC = () => {
     }
   }, [word, value]);
 
-  const onChange = useCallback((e) => {
+  // 타입 에러가 나면 어디서 타입을 가져오는지 확인해야한다 (네임이 같을 수 있으므로 import 확인)
+  // const onClick = useCallback((e: MouseEvent<HTMLButtonElement>) => { }, []);
+
+  // function useCallback<T extends Function>(callback: T, deps: DependencyList): T;
+  const onChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setValue(e.currentTarget.value);
   }, []);
 
