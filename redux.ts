@@ -1,17 +1,16 @@
 // redux는 export = , export default가 없다.
 // named export 방법만 사용 -> import { createStore, compose, legacy_createStore } from 'redux';
-import { legacy_createStore as createStore, combineReducers } from 'redux';
+import { legacy_createStore as createStore, combineReducers, applyMiddleware } from 'redux';
 
-const initialState = {
+let initialState = {
   user: {
     isLoggingIn: true,
     data: null,
   },
   posts: [],
 };
-
-const loginAction = { type: 'LOGIN' };
-const anyAction = { type: 'example', data: '1234' };
+// const loginAction = { type: 'LOGIN' };
+// const anyAction = { type: 'example', data: '1234' };
 
 // Q. Reducer 분석
 // 함수, 매개변수가 state, action이 있고 응답 값 s가 있다.
@@ -59,15 +58,21 @@ const reducer = combineReducers({
         return state;
     }
   },
+  // redux는 미리 action을 다 만들어둬야함
   posts: (state, action) => {
-    switch (action.type) {
-      // redux는 미리 action을 다 만들어둬야함
-      case 'ADD_POST': {
-        return [...state, action.data];
+    // Q. state가 unknown일때
+    // 1. as   
+    // 2. 타입가드
+    // 3. 애초에 library를 타이핑한다.
+    // if (Array.isArray(state)) {
+      switch (action.type) {
+        case 'ADD_POST': {
+          return [...state, action.data];
+        }
+        default:
+          return state;
       }
-      default:
-        return state;
-    }
+    // }
   },
 });
 
@@ -84,7 +89,7 @@ const reducer = combineReducers({
 // export interface Dispatch<A extends Action = AnyAction> {
 //   <T extends A>(action: T): T // 함수, T와 A AnyAction을 상속함
 // }
-const store = createStore(reducer, initialState);
+let store = createStore(reducer, initialState);
 
 export default store;
 
@@ -112,3 +117,59 @@ store.getState();
 //   },
 //   posts: [{ title: 'hello', content: 'redux' }],
 // };
+
+
+// Q. Middleware로 작업해보기 (네이밍 겹치는 것들은 예시를 위해 let으로 재선언하여 작업)
+initialState = { // 
+  user: {
+    isLoggingIn: true,
+    data: null,
+  },
+  posts: [],
+};
+
+const firstMiddleware = (store) => (next) => (action) => {
+  console.log('로깅', action);
+  next(action);
+};
+
+const thunkMiddleware = (store) => (next) => (action) => {
+  if (typeof action === 'function') { // 비동기
+    return action(store.dispatch, store.getState);
+  }
+
+  return next(action); // 동기
+};
+
+// Q. applyMiddleware 타입 확인
+// - 최대 5개 까지 대응
+// export function applyMiddleware<Ext1, Ext2, S>(
+//   middleware1: Middleware<Ext1, S, any>,
+//   middleware2: Middleware<Ext2, S, any>
+// ): StoreEnhancer<{ dispatch: Ext1 & Ext2 }>
+const enhancer = applyMiddleware(
+  firstMiddleware,
+  thunkMiddleware
+);
+
+// enhancer를 만들어서 3번째 인수로 넘겨준다.
+// Q. enhancer 타입 확인
+// export declare function legacy_createStore<S, A extends Action, Ext, StateExt>(
+//   reducer: Reducer<S, A>,
+//   preloadedState?: PreloadedState<S>,
+//   enhancer?: StoreEnhancer<Ext>
+  
+// ): Store<S & StateExt, A> & Ext
+
+// export type StoreEnhancer<Ext = {}, StateExt = {}> = (
+//   next: StoreEnhancerStoreCreator
+// ) => StoreEnhancerStoreCreator<Ext, StateExt>
+// export type StoreEnhancerStoreCreator<Ext = {}, StateExt = {}> = <
+//   S = any,
+//   A extends Action = AnyAction
+// >(
+//   reducer: Reducer<S, A>,
+//   preloadedState?: PreloadedState<S>
+// ) => Store<S & StateExt, A> & Ext
+store = createStore(reducer, initialState, enhancer);
+
