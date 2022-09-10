@@ -4,7 +4,7 @@ import { LogInFailureAction, LogInRequestAction, LogInSuccessAction, LogInSucces
 // 2.
 // Q. 타입 추론이 제대로 되면 typeof initialState하면 되는데, 그게 안될경우?
 // - 따로 타이핑해야함
-interface InitialState {
+export interface UserInitialState {
   isLoggingIn: boolean,
   loading: boolean,
   data: LogInSuccessData | null,
@@ -20,7 +20,7 @@ const initialState = {
 // const userReducer = (prevState = initialState, action: LogInSuccessAction | LogOutAction) => {
 // 2. 지정된 Reducer의 제네릭 활용
 type UserReducerActions = LogInSuccessAction | LogOutAction | LogInRequestAction | LogInFailureAction;
-const userReducer: Reducer<InitialState, UserReducerActions> = (prevState = initialState, action) => { 
+const userReducer: Reducer<UserInitialState, UserReducerActions> = (prevState = initialState, action) => { 
   switch (action.type) {
     case 'LOG_IN_REQUEST':
       return {

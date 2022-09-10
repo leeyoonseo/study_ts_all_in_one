@@ -75,7 +75,7 @@ const logInFailure = (error: LogInErrorData): LogInFailureAction => {
 export type LogOutAction = {
   type: 'LOG_OUT'
 };
-const logOut = (): LogOutAction => {
+export const logOut = (): LogOutAction => {
   return {
     type: 'LOG_OUT'
   }

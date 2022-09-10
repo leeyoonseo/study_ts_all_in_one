@@ -4,14 +4,14 @@ import { legacy_createStore as createStore, combineReducers, applyMiddleware, Mi
 import { ThunkMiddleware } from 'redux-thunk';
 import { logIn } from './actions/user';
 
-let initialState = {
-  user: {
-    loading: false,
-    isLoggingIn: true,
-    data: null,
-  },
-  posts: [],
-};
+// let initialState = {
+//   user: {
+//     loading: false,
+//     isLoggingIn: true,
+//     data: null,
+//   },
+//   posts: [],
+// };
 // const loginAction = { type: 'LOGIN' };
 // const anyAction = { type: 'example', data: '1234' };
 
@@ -123,10 +123,11 @@ const reducer = combineReducers({
 
 
 // Q. Middleware로 작업해보기 (네이밍 겹치는 것들은 예시를 위해 let으로 재선언하여 작업)
-initialState = { // 
+
+const initialState = { // 
   user: {
-    isLoggingIn: true,
     loading: false,
+    isLoggingIn: true,
     data: null,
   },
   posts: [],
@@ -191,6 +192,7 @@ const enhancer = applyMiddleware(
 //   reducer: Reducer<S, A>,
 //   preloadedState?: PreloadedState<S>
 // ) => Store<S & StateExt, A> & Ext
+
 const store = createStore(reducer, initialState, enhancer);
 
 // Q. logIn이 thunk라서 에러가 나는데, 해결법?
@@ -200,3 +202,10 @@ store.dispatch(logIn({
   nickname: '강아지',
   password: '1234',
 }));
+
+// react-redux.tsx에서 thunk까지 지원하는 컴포넌트 만들기를 위한 처리 
+export type RootState = ReturnType<typeof store.getState>; // 함수의 return값을 사용하고 싶을때 ReturnType을 사용할 수 있다.
+export type AppDispatch = typeof store.dispatch;
+
+// names export 하기
+export { store }; 
