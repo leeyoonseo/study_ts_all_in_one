@@ -32,5 +32,5 @@ const server = http.createServer((req, res) => {
   console.log('서버 시작');
 });
 
-exports = server;
+// exports = server;
 // module.exports = server;
