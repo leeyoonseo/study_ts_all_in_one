@@ -5,7 +5,7 @@
 // express는 타이핑이 index.d.ts 와 express-serve-static-core/index.d.ts 파일에 나눠져있음 
 // import * as core from 'express-serve-static-core';
 
-import express, { Request, Response, NextFunction, RequestHandler } from "express";
+import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from "express";
 
 // 여러가지 추측을 할 수 있다.
 // interface ExpressFunction {
@@ -80,13 +80,26 @@ const middleware4: RequestHandler<
 //   ...handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals>>
 // ): T;
 // 미들웨어는 requestHandler 타입
-app.get('/', (req, res) => {
-
-});
+app.get('/', middleware4);
 
 // app.use((err, req, res, next) => {
 //   console.log(err.status);
 // });
+
+// Q. error middleware 타이핑
+// - 우리가 추론하는 방법: use에 일단 넣어보고, use의 타입을 확인 -> error 관련 타입 확인
+// app.use((err, req, res, next) => {});
+// err가 any일 경우 처리 필요 (any -> unknown이나 직접 타이핑 필요)
+// declare global { // (import가 있어서 declare global을 사용할 수 있었던 것임)
+//   // 실제 코드랑 declare global이랑 잘 안씀 -> 즉 types.d.ts해서 별도의 타입으로 분리함
+//   interface Error { 
+//     status: number;
+//   }
+// }
+const errorMiddleware: ErrorRequestHandler = (err: Error, req, res, next) => {
+  console.log(err.status); 
+};
+app.use(errorMiddleware);
 
 app.listen(8080, () => {
 
@@ -100,6 +113,7 @@ app.listen(8080, () => {
 // 1. export 하지 않아도 자동으로 합쳐진다. (ts에서 하나로 만들기때문)
 // 2. 네이밍이 동일하면 충돌나기 때문에 declare global {} 이 존재하는것
 // ex:
+// declare - 타입 선언 및 확장
 declare global {
   namespace Express {
     export interface Response {
