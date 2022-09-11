@@ -9,6 +9,7 @@ import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestH
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
+import flash from 'connect-flash';
 
 // 여러가지 추측을 할 수 있다.
 // interface ExpressFunction {
@@ -33,6 +34,9 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+// connect-flat 타이핑하기
+app.use(flash());
 
 // app.use('/', express.static('./public'));
 
@@ -74,7 +78,7 @@ const middleware4: RequestHandler<
   // res.body
   res.json({
     message: 'hello',
-  })
+  });
 
   // express 관련 모듈을 설치하게 되면, req 메소드가 확장됨(미들웨어따라서 추가됨)
   // req.cookies // cookie-parser
@@ -83,6 +87,12 @@ const middleware4: RequestHandler<
   
   // Q.types.d.ts에 interface User 확장해보기
   req.user?.phone;
+
+  // Q. connect-flash 타이핑해보기
+  req.flash('플래시 메시지'); // set
+  req.flash('1회성', '플래시메시지'); // set
+  req.flash(); // get
+  // req.flash(); // get -> undefined (1회성이므로 값이 비워짐)
 };
 
 
@@ -116,7 +126,7 @@ app.get('/', middleware4);
 //   }
 // }
 const errorMiddleware: ErrorRequestHandler = (err: Error, req, res, next) => {
-  console.log(err.status); 
+  // console.log(err.status); 
 };
 app.use(errorMiddleware);
 
