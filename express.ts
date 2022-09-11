@@ -6,6 +6,9 @@
 // import * as core from 'express-serve-static-core';
 
 import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from "express";
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import passport from "passport";
 
 // 여러가지 추측을 할 수 있다.
 // interface ExpressFunction {
@@ -22,6 +25,14 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Q. 추가한 미들 웨어 장착
+app.use(cookieParser('SECRET'));
+app.use(session({
+  secret: 'SECRET',
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 // app.use('/', express.static('./public'));
 
@@ -64,6 +75,14 @@ const middleware4: RequestHandler<
   res.json({
     message: 'hello',
   })
+
+  // express 관련 모듈을 설치하게 되면, req 메소드가 확장됨(미들웨어따라서 추가됨)
+  // req.cookies // cookie-parser
+  // req.session // expess-session
+  // req.isAuthenticated() // passport-local
+  
+  // Q.types.d.ts에 interface User 확장해보기
+  req.user?.phone;
 };
 
 
