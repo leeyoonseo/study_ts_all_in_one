@@ -5,7 +5,7 @@
 // express는 타이핑이 index.d.ts 와 express-serve-static-core/index.d.ts 파일에 나눠져있음 
 // import * as core from 'express-serve-static-core';
 
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction, RequestHandler } from "express";
 
 // 여러가지 추측을 할 수 있다.
 // interface ExpressFunction {
@@ -34,14 +34,36 @@ const middleware1 = (req: Request, res: Response, next: NextFunction) => { }; //
 // Q. Request와 Express.Request와 다른것을 가리키고 있는데 결론은 왜 같은가?
 // Request가 Express.Request를 extends하고 있기 때문에 아예 같지는 않음
 const middleware2 = (req: Express.Request, res: Express.Response, next: express.NextFunction) => { }; // 2.
-// 즉 확장이 가능
+// 즉 확장이 가능 (import 해오는 것과 네이밍이 겹치면 에러가 나기때문에 declare global을 사용한다.(99줄 참고))
 // interface Response { // Express.Response 확장이 아니며 Response를 확장
 //   testName: '강아지',
 // }
 
 // Q. 미들웨어가 따로 선언되어있으면 추론이 불가, 이때 타이핑 [방법 2]
-const middleware4 = (req, res, next) => {
-
+// interface RequestHandler<
+//   P = core.ParamsDictionary,
+//   ResBody = any,
+//   ReqBody = any,
+//   ReqQuery = core.Query,
+//   Locals extends Record<string, any> = Record<string, any>
+// > extends core.RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals> {}
+// Q. 제네릭을 사용하여 any 타입 타이핑하기
+const middleware4: RequestHandler<
+  { paramType: string },
+  { message: string },
+  { bodyType: number },
+  { queryType: boolean },
+  { localType: unknown }
+> = (req, res, next) => {
+  req.params.paramType;
+  req.body.bodyType;
+  req.query.queryType;
+  res.locals.localType;
+    
+  // res.body
+  res.json({
+    message: 'hello',
+  })
 };
 
 
@@ -73,3 +95,20 @@ app.listen(8080, () => {
 // Q. declare global {} 만든 이유는? -> 직접 수정하여 사용하기 위함 (확장)
 // declare global {}, declare namespace, declare module은 여러번 선언하면 interface 처럼 합쳐진다.
 // 즉, 나중에 확장이나 수정이 가능하다. === 내가 고쳐쓸 수 있다.
+
+// Q. import 해온 { Request, Response, NextFunction, RequestHandler } interface를 로컬에서 선언한것과 합치려면?
+// 1. export 하지 않아도 자동으로 합쳐진다. (ts에서 하나로 만들기때문)
+// 2. 네이밍이 동일하면 충돌나기 때문에 declare global {} 이 존재하는것
+// ex:
+declare global {
+  namespace Express {
+    export interface Response {
+  
+    }
+  
+    export interface Request { 
+      testName: '강아지',
+    }
+
+  }
+}
